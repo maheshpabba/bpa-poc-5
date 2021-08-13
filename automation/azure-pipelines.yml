@@ -1,0 +1,14 @@
+
+trigger:
+  - development
+
+
+- task: HelmDeploy@0
+  displayName: Helm install
+  inputs:
+    azureSubscriptionEndpoint: $(azureSubscriptionEndpoint)
+    azureResourceGroup: $(azureResourceGroup)
+    kubernetesCluster: $(kubernetesCluster)
+    command: install
+    chartType: FilePath
+    chartPath: Application/charts/sampleapp
