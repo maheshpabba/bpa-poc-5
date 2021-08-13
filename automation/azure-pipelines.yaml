@@ -9,7 +9,7 @@ trigger:
 - task: HelmDeploy@0
   inputs:
     connectionType: 'Kubernetes Service Connection'
-    kubernetesServiceConnection: 'testkcluster1'
+    kubernetesServiceConnection: $(cluster_name)
     namespace: 'bpa-ns'
     command: 'install'
     chartType: 'FilePath'
