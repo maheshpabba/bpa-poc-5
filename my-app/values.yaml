@@ -1,0 +1,40 @@
+# Default values for my-app.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+ingress_controller:
+  external: false
+  service:
+    create: true
+    externalIPs: [10.240.0.10]
+    httpPort:
+      enable: false
+      nodePort: 30100
+      port: 80
+      targetPort: 80
+    httpsPort:
+      enable: true
+      nodePort: 30101
+      port: 443
+      targetPort: 443
+    loadBalancerIP: ''
+    loadBalancerSourceRanges: []
+    name: ingress-nginx
+    type: LoadBalancer
+imageVersions:
+  ingress_controller: nginx-3.0.0-1
+global:
+  ingress_controller:
+    create: true
+  registry:
+    server: attbpa.azurecr.io
+registry:
+  password: 04xQyCfuOKfhWdFQsLhaHIlnZymh/AAU
+  username: attbpa
+k8sdashboard:
+  create: false
+  imageVersions:
+    k8sdashboard: v2.0.0-beta1
+    metricsscraper: metrics-scraper-v1.0.0
+  nodePort:
+    https: 30801

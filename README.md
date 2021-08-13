@@ -1,2 +1,2 @@
-# bpa-poc-5
-bpa-poc
+# ATT-5G-PoC
+AT&amp;T 5G PoC project

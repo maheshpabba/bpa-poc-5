@@ -1,0 +1,1197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color/1.0" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1py2yo9" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.9.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
+  <bpmn:collaboration id="Collaboration_0wu1azv">
+    <bpmn:participant id="Participant_1i2dn3o" name="Create Kubernetes Cluster" processRef="create_AKS_Cluster" />
+  </bpmn:collaboration>
+  <bpmn:process id="create_AKS_Cluster" name="create_AKS_Cluster" isExecutable="true">
+    <bpmn:laneSet id="LaneSet_0np6oz1">
+      <bpmn:lane id="Lane_0pcw5xz" name="Order Preparation">
+        <bpmn:flowNodeRef>Event_1i7qpz5</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_1a8w8ti</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_0rtddzn</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ServiceTask_02162lw</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ServiceTask_1xlv29u</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_1jr7x72" name="Azure Login &#38; get Access Token">
+        <bpmn:flowNodeRef>Activity_0t972gu</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_0thdcbd</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_1kw4ucy</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_0pholux</bpmn:flowNodeRef>
+        <bpmn:childLaneSet id="LaneSet_1puyn55" />
+      </bpmn:lane>
+      <bpmn:lane id="Lane_17b9uz0" name="Get Subscription ID and Location">
+        <bpmn:flowNodeRef>Activity_0jrwjj1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_1qs50in</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_1wnx2f2</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_1n3kqqy</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_0351qf6</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_0i92pqw</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_18xoy9k" name="Create the AKS Cluster">
+        <bpmn:flowNodeRef>Activity_1v3da2q</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_1q1fn5a</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_1uq9i2q</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_1g7ptzg</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_1mfpaoq</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_1rrvelr</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_0efjq01</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_1wb5cp6</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_0a839kf" name="Create and Generate SSH Key Pair">
+        <bpmn:flowNodeRef>Activity_1a3ubge</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_10xqwch</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_15vyhy3</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_0r5gv8e</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_18ttpvb</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Event_1i7qpz5">
+      <bpmn:outgoing>Flow_1uita4a</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:scriptTask id="Activity_1a8w8ti" name="Process Form Variables" scriptFormat="JavaScript">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:outputParameter name="milestonesCollection">
+            <camunda:script scriptFormat="JavaScript">var milestonesCollection = [{
+  "key": "milestoneOrderPlaced",
+  "value": "Order Placed"
+},{
+  "key": "milestoneFetchSubscriptionId",
+  "value": "Fetch Azure Subscription ID"
+},{
+  "key": "milestoneFetchRGandLocation",
+  "value": "Fetch Resource Group and Location"
+},{
+  "key": "milestoneCreateSSHKeyandFetchPubKey",
+  "value": "Create, Generate key pair and Fetch SSH Pub Key"
+},{
+  "key": "milestoneCreateKubernetesCluster",
+  "value": "Create the Azure Kubernetes Cluster"
+}];
+var spinMilestonesCollection = S(JSON.stringify(milestonesCollection)).mapTo("java.util.ArrayList");
+
+spinMilestonesCollection;</camunda:script>
+          </camunda:outputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1uita4a</bpmn:incoming>
+      <bpmn:outgoing>Flow_046uv29</bpmn:outgoing>
+      <bpmn:script>print(execution.getProcessInstanceId() + " Workflow Started");
+var formData = execution.getVariable('formData');
+formData = S(formData);
+
+//var tenantid = "d1460471-811c-41db-81dc-b9f627bd8532";
+//var client_id = "72ec4c26-953f-438b-a6c0-d8b6cb4f9320";
+//var client_secret = "Hgp.XY__Tbc7LF8_1Kz_09qOqB3WPMowFB";
+//var resource = "https://management.azure.com/";
+//var resourcename = "testkcluster1";
+//var sshkeyname = "testkubsshkey1";
+
+
+//execution.setVariable("TenantId",tenantid);
+//execution.setVariable("ClientId", client_id);
+//execution.setVariable("ClientSecret", client_secret);
+//execution.setVariable("ToResource", resource);
+//execution.setVariable("rname", resourcename);
+//execution.setVariable("sshPublicKeyName",sshkeyname);
+
+execution.setVariable("TenantId",formData.prop("create").elements().get(0).prop("createKubeCluster").elements().get(0).prop("tenantid").value());
+execution.setVariable("ClientId", formData.prop("create").elements().get(0).prop("createKubeCluster").elements().get(0).prop("client_id").value());
+execution.setVariable("ClientSecret", formData.prop("create").elements().get(0).prop("createKubeCluster").elements().get(0).prop("client_secret").value());
+execution.setVariable("ToResource", formData.prop("create").elements().get(0).prop("createKubeCluster").elements().get(0).prop("resource").value());
+execution.setVariable("rname", formData.prop("create").elements().get(0).prop("createKubeCluster").elements().get(0).prop("resourcename").value());
+execution.setVariable("sshPublicKeyName",formData.prop("create").elements().get(0).prop("createKubeCluster").elements().get(0).prop("sshkeyname").value());
+
+print("tenant Id: " + TenantId);
+print("client_id: " + ClientId);
+print("client_secret: " + ClientSecret);
+print("Resource name is: " + ToResource);
+print("The Cluster Name is : " + rname);
+print("The SSH Keyname is: " + sshPublicKeyName);</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:intermediateThrowEvent id="Event_0rtddzn" name="Proceed to Login to Microsoft">
+      <bpmn:incoming>Flow_0pm7g02</bpmn:incoming>
+      <bpmn:linkEventDefinition id="LinkEventDefinition_0wpzwpa" name="Azure Login" />
+    </bpmn:intermediateThrowEvent>
+    <bpmn:serviceTask id="Activity_0t972gu" name="Login to MicrosoftOnline to fetch access token">
+      <bpmn:extensionElements>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="url">https://login.microsoftonline.com/${TenantId}/oauth2/token</camunda:inputParameter>
+            <camunda:inputParameter name="method">POST</camunda:inputParameter>
+            <camunda:inputParameter name="headers">
+              <camunda:map>
+                <camunda:entry key="Accept">*/*</camunda:entry>
+                <camunda:entry key="content-type">application/x-www-form-urlencoded</camunda:entry>
+              </camunda:map>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="payload">
+              <camunda:script scriptFormat="JavaScript">var data = {
+    "client_id": execution.getVariable("ClientId"),
+    "client_secret": execution.getVariable("ClientSecret"),
+    "resource": execution.getVariable("ToResource"),
+    "grant_type": "client_credentials"
+    };
+
+// Converts the JSON into a MailGun friendly params string
+Content = Object.keys(data).map(function(k) {
+    return encodeURIComponent(k) + '=' + encodeURIComponent(data[k])
+}).join('&amp;')
+
+Content;</camunda:script>
+            </camunda:inputParameter>
+            <camunda:outputParameter name="onError">
+              <camunda:script scriptFormat="JavaScript">var response = connector.getVariable("response");
+var onError = false;
+try{
+var jsonResp = S(response);
+token=jsonResp.prop("access_token").value();
+if (!token) {
+onError = true;
+}
+} catch(err) {
+print(err);
+}
+onError;</camunda:script>
+            </camunda:outputParameter>
+            <camunda:outputParameter name="access_token">
+              <camunda:script scriptFormat="JavaScript">var response = connector.getVariable("response");
+try{
+var jsonResp = S(response);
+token=jsonResp.prop("access_token").value();
+} catch(err) {
+print(err);
+}
+token</camunda:script>
+            </camunda:outputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>http-connector</camunda:connectorId>
+        </camunda:connector>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1tffsrj</bpmn:incoming>
+      <bpmn:outgoing>Flow_0mqsgnm</bpmn:outgoing>
+      <bpmn:outgoing>Flow_108d09m</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:intermediateCatchEvent id="Event_0thdcbd" name="Azure Login">
+      <bpmn:outgoing>Flow_1tffsrj</bpmn:outgoing>
+      <bpmn:linkEventDefinition id="LinkEventDefinition_003972j" name="Azure Login" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateThrowEvent id="Event_1kw4ucy" name="Proceed to Fetch Subscription ID">
+      <bpmn:incoming>Flow_0mqsgnm</bpmn:incoming>
+      <bpmn:linkEventDefinition id="LinkEventDefinition_0czpfqa" name="sub_id" />
+    </bpmn:intermediateThrowEvent>
+    <bpmn:serviceTask id="Activity_0jrwjj1" name="Fetch Subscription">
+      <bpmn:extensionElements>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="headers">
+              <camunda:map>
+                <camunda:entry key="Accept">*/*</camunda:entry>
+                <camunda:entry key="content-type">application/json</camunda:entry>
+                <camunda:entry key="Authorization">${token}</camunda:entry>
+              </camunda:map>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="method">GET</camunda:inputParameter>
+            <camunda:inputParameter name="url">https://management.azure.com/subscriptions?api-version=2020-01-01</camunda:inputParameter>
+            <camunda:outputParameter name="subscription_id">
+              <camunda:script scriptFormat="JavaScript">var response = connector.getVariable("response");
+try{
+var arr = S(response).prop("value").elements().get(0).prop("subscriptionId").value();
+} catch(err) {
+print(err);
+}
+arr</camunda:script>
+            </camunda:outputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>http-connector</camunda:connectorId>
+        </camunda:connector>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="token">
+            <camunda:script scriptFormat="JavaScript">var token = "Bearer "; 
+token += access_token;
+token;</camunda:script>
+          </camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_11caqp0</bpmn:incoming>
+      <bpmn:outgoing>Flow_1lauksn</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Activity_1qs50in" name="Fetch Resource Group and Location">
+      <bpmn:extensionElements>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="headers">
+              <camunda:map>
+                <camunda:entry key="Accept">*/*</camunda:entry>
+                <camunda:entry key="content-type">application/json</camunda:entry>
+                <camunda:entry key="Authorization">${token}</camunda:entry>
+              </camunda:map>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="method">GET</camunda:inputParameter>
+            <camunda:inputParameter name="url">https://management.azure.com/subscriptions/${subscription_id}/resourcegroups?api-version=2021-04-01</camunda:inputParameter>
+            <camunda:outputParameter name="location">
+              <camunda:script scriptFormat="JavaScript">var response = connector.getVariable("response");
+try{
+var arr=S(response).prop("value").elements().get(0).prop("location").value();
+} catch(err){
+print(err);
+}
+arr</camunda:script>
+            </camunda:outputParameter>
+            <camunda:outputParameter name="rgname">
+              <camunda:script scriptFormat="JavaScript">var response = connector.getVariable("response");
+try{
+var arr=S(response).prop("value").elements().get(0).prop("name").value();
+} catch(err) {
+print(err);
+}
+arr</camunda:script>
+            </camunda:outputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>http-connector</camunda:connectorId>
+        </camunda:connector>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="token">
+            <camunda:script scriptFormat="JavaScript">var token = "Bearer "; 
+token += access_token;
+token;</camunda:script>
+          </camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_09xmjd1</bpmn:incoming>
+      <bpmn:outgoing>Flow_1c6bnp8</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:intermediateCatchEvent id="Event_1wnx2f2" name="Get Azure Details">
+      <bpmn:outgoing>Flow_11caqp0</bpmn:outgoing>
+      <bpmn:linkEventDefinition id="LinkEventDefinition_020bely" name="sub_id" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:serviceTask id="Activity_1n3kqqy" name="Milestone Fetch RG and Location">
+      <bpmn:extensionElements>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="url">
+              <camunda:script scriptFormat="JavaScript">var url = 'https://milestones-ms:9211/api/v1.0/milestones/' + milestoneFetchRGandLocation;
+print();
+print('Set Milestone "Fetch Resource Group and Location" to Complete =&gt; ' + url);
+
+url;</camunda:script>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="method">PATCH</camunda:inputParameter>
+            <camunda:inputParameter name="headers">
+              <camunda:script scriptFormat="JavaScript">var header = new java.util.HashMap();
+
+var correlationID = execution.getVariable("x-correlation-id");
+header.put("Content-Type","application/json");
+header.put("accept","application/json");
+header.put("Connection","keep-alive");
+header.put("x-correlation-id",correlationID);
+
+header;</camunda:script>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="payload">
+              <camunda:script scriptFormat="JavaScript">print();
+print('Inside Payload =&gt;');
+
+var req = {
+  'status': 'Complete'
+};
+
+var payload = JSON.stringify(req);
+print('Milestone payload =&gt; ' + payload);
+
+var currDate = new Date();
+print('currDate: ' + currDate);
+execution.setVariable('orderPlacedTS', currDate.getTime());
+print('orderPlacedTS: ' + execution.getVariable('orderPlacedTS'));
+
+payload;</camunda:script>
+            </camunda:inputParameter>
+            <camunda:outputParameter name="milestoneResponse">
+              <camunda:script scriptFormat="JavaScript">if (statusCode == 200) {
+  print('Milestone response =&gt; ' + S(response));
+} else {
+  print("Milestone initialization failed. Error =&gt; "+response);
+  throw org.camunda.bpm.engine.delegate.BpmnError("serviceCatalogError", execution.getCurrentActivityName() + " " + response);
+}</camunda:script>
+            </camunda:outputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>http-connector</camunda:connectorId>
+        </camunda:connector>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1c6bnp8</bpmn:incoming>
+      <bpmn:outgoing>Flow_1iu333k</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:intermediateThrowEvent id="Event_0351qf6" name="Proceed to create and Get SSH key">
+      <bpmn:incoming>Flow_1iu333k</bpmn:incoming>
+      <bpmn:linkEventDefinition id="LinkEventDefinition_0gbr5o8" name="sshkey" />
+    </bpmn:intermediateThrowEvent>
+    <bpmn:serviceTask id="Activity_0i92pqw" name="Milestone Fetch Subscription ID">
+      <bpmn:extensionElements>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="url">
+              <camunda:script scriptFormat="JavaScript">var url = 'https://milestones-ms:9211/api/v1.0/milestones/' + milestoneFetchSubscriptionId;
+print();
+print('Set Milestone "Fetch Azure Subscription ID" to Complete =&gt; ' + url);
+
+url;</camunda:script>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="method">PATCH</camunda:inputParameter>
+            <camunda:inputParameter name="headers">
+              <camunda:script scriptFormat="JavaScript">var header = new java.util.HashMap();
+
+var correlationID = execution.getVariable("x-correlation-id");
+header.put("Content-Type","application/json");
+header.put("accept","application/json");
+header.put("Connection","keep-alive");
+header.put("x-correlation-id",correlationID);
+
+header;</camunda:script>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="payload">
+              <camunda:script scriptFormat="JavaScript">print();
+print('Inside Payload =&gt;');
+
+var req = {
+  'status': 'Complete'
+};
+
+var payload = JSON.stringify(req);
+print('Milestone payload =&gt; ' + payload);
+
+var currDate = new Date();
+print('currDate: ' + currDate);
+execution.setVariable('orderPlacedTS', currDate.getTime());
+print('orderPlacedTS: ' + execution.getVariable('orderPlacedTS'));
+
+payload;</camunda:script>
+            </camunda:inputParameter>
+            <camunda:outputParameter name="milestoneResponse">
+              <camunda:script scriptFormat="JavaScript">if (statusCode == 200) {
+  print('Milestone response =&gt; ' + S(response));
+} else {
+  print("Milestone initialization failed. Error =&gt; "+response);
+  throw org.camunda.bpm.engine.delegate.BpmnError("serviceCatalogError", execution.getCurrentActivityName() + " " + response);
+}</camunda:script>
+            </camunda:outputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>http-connector</camunda:connectorId>
+        </camunda:connector>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1lauksn</bpmn:incoming>
+      <bpmn:outgoing>Flow_09xmjd1</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Activity_1a3ubge" name="Create SSH Key">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="token">
+            <camunda:script scriptFormat="JavaScript">var token = "Bearer "; 
+token += access_token;
+token;</camunda:script>
+          </camunda:inputParameter>
+        </camunda:inputOutput>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="payload">
+              <camunda:script scriptFormat="JavaScript">var data = {
+  "location": location
+};
+JSON.stringify(data);</camunda:script>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="url">https://management.azure.com/subscriptions/${subscription_id}/resourceGroups/${rgname}/providers/Microsoft.Compute/sshPublicKeys/${sshPublicKeyName}?api-version=2021-03-01</camunda:inputParameter>
+            <camunda:inputParameter name="headers">
+              <camunda:map>
+                <camunda:entry key="Accept">*/*</camunda:entry>
+                <camunda:entry key="content-type">application/json</camunda:entry>
+                <camunda:entry key="Authorization">${token}</camunda:entry>
+              </camunda:map>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="method">PUT</camunda:inputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>http-connector</camunda:connectorId>
+        </camunda:connector>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_18j7rbe</bpmn:incoming>
+      <bpmn:outgoing>Flow_0e4ewq4</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Activity_10xqwch" name="Generate Key Pair">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="token">
+            <camunda:script scriptFormat="JavaScript">var token = "Bearer "; 
+token += access_token;
+token;</camunda:script>
+          </camunda:inputParameter>
+        </camunda:inputOutput>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="url">https://management.azure.com/subscriptions/${subscription_id}/resourceGroups/${rgname}/providers/Microsoft.Compute/sshPublicKeys/${sshPublicKeyName}/generateKeyPair?api-version=2021-03-01</camunda:inputParameter>
+            <camunda:inputParameter name="headers">
+              <camunda:map>
+                <camunda:entry key="Accept">*/*</camunda:entry>
+                <camunda:entry key="content-type">application/json</camunda:entry>
+                <camunda:entry key="Authorization">${token}</camunda:entry>
+              </camunda:map>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="method">POST</camunda:inputParameter>
+            <camunda:outputParameter name="pubkey">
+              <camunda:script scriptFormat="JavaScript">var response = connector.getVariable("response");
+try{
+var arr=S(response).prop("publicKey").value();
+} catch(err) {
+print(err);
+}
+arr</camunda:script>
+            </camunda:outputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>http-connector</camunda:connectorId>
+        </camunda:connector>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0e4ewq4</bpmn:incoming>
+      <bpmn:outgoing>Flow_1gzyvab</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Activity_15vyhy3" name="Milestone Create and Generate SSH key">
+      <bpmn:extensionElements>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="url">
+              <camunda:script scriptFormat="JavaScript">var url = 'https://milestones-ms:9211/api/v1.0/milestones/' + milestoneCreateSSHKeyandFetchPubKey;
+print();
+print('Set Milestone "Create, Generate key pair and Fetch SSH Pub key" to Complete =&gt; ' + url);
+
+url;</camunda:script>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="method">PATCH</camunda:inputParameter>
+            <camunda:inputParameter name="headers">
+              <camunda:script scriptFormat="JavaScript">var header = new java.util.HashMap();
+
+var correlationID = execution.getVariable("x-correlation-id");
+header.put("Content-Type","application/json");
+header.put("accept","application/json");
+header.put("Connection","keep-alive");
+header.put("x-correlation-id",correlationID);
+
+header;</camunda:script>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="payload">
+              <camunda:script scriptFormat="JavaScript">print();
+print('Inside Payload =&gt;');
+
+var req = {
+  'status': 'Complete'
+};
+
+var payload = JSON.stringify(req);
+print('Milestone payload =&gt; ' + payload);
+
+var currDate = new Date();
+print('currDate: ' + currDate);
+execution.setVariable('orderPlacedTS', currDate.getTime());
+print('orderPlacedTS: ' + execution.getVariable('orderPlacedTS'));
+
+payload;</camunda:script>
+            </camunda:inputParameter>
+            <camunda:outputParameter name="milestoneResponse">
+              <camunda:script scriptFormat="JavaScript">if (statusCode == 200) {
+  print('Milestone response =&gt; ' + S(response));
+} else {
+  print("Milestone initialization failed. Error =&gt; "+response);
+  throw org.camunda.bpm.engine.delegate.BpmnError("serviceCatalogError", execution.getCurrentActivityName() + " " + response);
+}</camunda:script>
+            </camunda:outputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>http-connector</camunda:connectorId>
+        </camunda:connector>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1gzyvab</bpmn:incoming>
+      <bpmn:outgoing>Flow_059nqbm</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:intermediateThrowEvent id="Event_0r5gv8e" name="Proceed to create Cluster">
+      <bpmn:incoming>Flow_059nqbm</bpmn:incoming>
+      <bpmn:linkEventDefinition id="LinkEventDefinition_0v1rkuc" name="aks" />
+    </bpmn:intermediateThrowEvent>
+    <bpmn:intermediateCatchEvent id="Event_18ttpvb" name="Create and Generate SSH Key">
+      <bpmn:outgoing>Flow_18j7rbe</bpmn:outgoing>
+      <bpmn:linkEventDefinition id="LinkEventDefinition_0ofdzvr" name="sshkey" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:serviceTask id="Activity_1v3da2q" name="Create the Kubernetes Cluster">
+      <bpmn:extensionElements>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="payload">
+              <camunda:script scriptFormat="JavaScript">var data = {
+    "location": "eastus",
+    "tags": {
+      "tier": "development",
+      "archv2": ""
+    },
+    "sku": {
+      "name": "Basic",
+      "tier": "Free"
+    },
+    "properties": {
+      "kubernetesVersion": "1.20.7",
+      "dnsPrefix": "testkcluster1-dns",
+      "agentPoolProfiles": [
+        {
+          "name": "nodepool1",
+          "count": 3,
+          "vmSize": "Standard_DS2_v2",
+          "osType": "Linux",
+          "type": "VirtualMachineScaleSets",
+          "availabilityZones": [
+            "1",
+            "2",
+            "3"
+          ],
+          "enableNodePublicIP": true,
+          "mode": "System"
+        }
+      ],
+      "linuxProfile": {
+        "adminUsername": "kubeuser",
+        "ssh": {
+          "publicKeys": [
+            {
+              "keyData": pubkey
+            }
+          ]
+        }
+      },
+      "networkProfile": {
+        "loadBalancerSku": "standard",
+        "networkPlugin": "kubenet",
+        "networkPolicy": "calico",
+        "outboundType": "loadBalancer",
+        "loadBalancerProfile": {
+          "managedOutboundIPs": {
+            "count": 2
+          }
+        }
+      },
+      "servicePrincipalProfile": {
+        "clientId": execution.getVariable("ClientId"),
+        "secret": execution.getVariable("ClientSecret")
+      },
+      "enableRBAC": true,
+      "enablePodSecurityPolicy": false
+    },
+    "identity": {
+      "type": "SystemAssigned"
+    }
+  };
+JSON.stringify(data);</camunda:script>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="headers">
+              <camunda:map>
+                <camunda:entry key="Accept">*/*</camunda:entry>
+                <camunda:entry key="content-type">application/json</camunda:entry>
+                <camunda:entry key="Authorization">${token}</camunda:entry>
+              </camunda:map>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="method">PUT</camunda:inputParameter>
+            <camunda:inputParameter name="url">https://management.azure.com/subscriptions/${subscription_id}/resourceGroups/${rgname}/providers/Microsoft.ContainerService/managedClusters/${rname}?api-version=2021-05-01</camunda:inputParameter>
+            <camunda:outputParameter name="provisioning">
+              <camunda:script scriptFormat="JavaScript">var response = connector.getVariable("response");
+print(S(response));
+try{
+var arr=S(response).prop("properties").prop("provisioningState").value();
+} catch(err) {
+print(err);
+}
+arr</camunda:script>
+            </camunda:outputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>http-connector</camunda:connectorId>
+        </camunda:connector>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="token">
+            <camunda:script scriptFormat="JavaScript">var token = "Bearer "; 
+token += access_token;
+token;</camunda:script>
+          </camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1nupxgg</bpmn:incoming>
+      <bpmn:outgoing>Flow_041eb0u</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:intermediateCatchEvent id="Event_1q1fn5a" name="create AKS Cluster">
+      <bpmn:outgoing>Flow_1nupxgg</bpmn:outgoing>
+      <bpmn:linkEventDefinition id="LinkEventDefinition_10mvm0d" name="aks" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:serviceTask id="Activity_1uq9i2q" name="Milestone Create Kubernetes Cluster">
+      <bpmn:extensionElements>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="url">
+              <camunda:script scriptFormat="JavaScript">var url = 'https://milestones-ms:9211/api/v1.0/milestones/' + milestoneCreateKubernetesCluster;
+print();
+print('Set Milestone "Create the Azure Kubernetes Cluster" to Complete =&gt; ' + url);
+
+url;</camunda:script>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="method">PATCH</camunda:inputParameter>
+            <camunda:inputParameter name="headers">
+              <camunda:script scriptFormat="JavaScript">var header = new java.util.HashMap();
+
+var correlationID = execution.getVariable("x-correlation-id");
+header.put("Content-Type","application/json");
+header.put("accept","application/json");
+header.put("Connection","keep-alive");
+header.put("x-correlation-id",correlationID);
+
+header;</camunda:script>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="payload">
+              <camunda:script scriptFormat="JavaScript">print();
+print('Inside Payload =&gt;');
+
+var req = {
+  'status': 'Complete'
+};
+
+var payload = JSON.stringify(req);
+print('Milestone payload =&gt; ' + payload);
+
+var currDate = new Date();
+print('currDate: ' + currDate);
+execution.setVariable('orderPlacedTS', currDate.getTime());
+print('orderPlacedTS: ' + execution.getVariable('orderPlacedTS'));
+
+payload;</camunda:script>
+            </camunda:inputParameter>
+            <camunda:outputParameter name="milestoneResponse">
+              <camunda:script scriptFormat="JavaScript">if (statusCode == 200) {
+  print('Milestone response =&gt; ' + S(response));
+} else {
+  print("Milestone initialization failed. Error =&gt; "+response);
+  throw org.camunda.bpm.engine.delegate.BpmnError("serviceCatalogError", execution.getCurrentActivityName() + " " + response);
+}</camunda:script>
+            </camunda:outputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>http-connector</camunda:connectorId>
+        </camunda:connector>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0ka9ezn</bpmn:incoming>
+      <bpmn:outgoing>Flow_1kjqhwe</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="Event_0pholux">
+      <bpmn:incoming>Flow_108d09m</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="ServiceTask_02162lw" name="Define Milestones">
+      <bpmn:extensionElements>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="url">https://milestones-ms:9211/api/v1.0/milestones</camunda:inputParameter>
+            <camunda:inputParameter name="method">POST</camunda:inputParameter>
+            <camunda:inputParameter name="headers">
+              <camunda:script scriptFormat="JavaScript">var header = new java.util.HashMap();
+
+var correlationID = execution.getVariable("x-correlation-id");
+var sessionID = execution.getVariable("x-session-id");
+header.put("Content-Type", "application/json"); 
+header.put("accept", "application/json"); 
+header.put("Connection", "keep-alive"); 
+header.put("x-correlation-id", correlationID); 
+header.put("x-session-id", sessionID);
+
+header;</camunda:script>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="payload">
+              <camunda:script scriptFormat="JavaScript">print();
+print('Initialize milestone: ' + milestone);
+
+var req = {
+    'objectType': 'service-catalog-order',
+    'objectReference': orderId,
+    'milestone': milestone.value,
+    'status': 'Pending'
+};
+
+var payload = JSON.stringify(req);
+print('Milestone payload =&gt; ' + payload);
+
+payload;</camunda:script>
+            </camunda:inputParameter>
+            <camunda:outputParameter name="DefineMilestoneResponse">
+              <camunda:script scriptFormat="JavaScript">try {
+    var defineMilestoneResp = S(response);
+    print('Milestone task response =&gt; ' + defineMilestoneResp);
+    connector.setVariable(milestone.key, defineMilestoneResp.prop('data').prop('_id').value());
+    defineMilestoneResp;
+} catch (err) {
+    print('Milestone initialization failed. Error =&gt; ' + err.message);
+}</camunda:script>
+            </camunda:outputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>http-connector</camunda:connectorId>
+        </camunda:connector>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_046uv29</bpmn:incoming>
+      <bpmn:outgoing>Flow_0dwu4h7</bpmn:outgoing>
+      <bpmn:multiInstanceLoopCharacteristics isSequential="true" camunda:asyncAfter="true" camunda:exclusive="false" camunda:collection="milestonesCollection" camunda:elementVariable="milestone" />
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="ServiceTask_1xlv29u" name="Milestone Order Placed">
+      <bpmn:extensionElements>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="url">
+              <camunda:script scriptFormat="JavaScript">var url = 'https://milestones-ms:9211/api/v1.0/milestones/' + milestoneOrderPlaced;
+print();
+print('Set Milestone "Order Placed" to Complete =&gt; ' + url);
+
+url;</camunda:script>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="method">PATCH</camunda:inputParameter>
+            <camunda:inputParameter name="headers">
+              <camunda:script scriptFormat="JavaScript">var header = new java.util.HashMap();
+
+var correlationID = execution.getVariable("x-correlation-id");
+header.put("Content-Type","application/json");
+header.put("accept","application/json");
+header.put("Connection","keep-alive");
+header.put("x-correlation-id",correlationID);
+
+header;</camunda:script>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="payload">
+              <camunda:script scriptFormat="JavaScript">print();
+print('Inside Payload =&gt;');
+
+var req = {
+  'status': 'Complete'
+};
+
+var payload = JSON.stringify(req);
+print('Milestone payload =&gt; ' + payload);
+
+var currDate = new Date();
+print('currDate: ' + currDate);
+execution.setVariable('orderPlacedTS', currDate.getTime());
+print('orderPlacedTS: ' + execution.getVariable('orderPlacedTS'));
+
+payload;</camunda:script>
+            </camunda:inputParameter>
+            <camunda:outputParameter name="milestoneResponse">
+              <camunda:script scriptFormat="JavaScript">if (statusCode == 200) {
+  print('Milestone response =&gt; ' + S(response));
+} else {
+  print("Milestone initialization failed. Error =&gt; "+response);
+  throw org.camunda.bpm.engine.delegate.BpmnError("serviceCatalogError", execution.getCurrentActivityName() + " " + response);
+}</camunda:script>
+            </camunda:outputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>http-connector</camunda:connectorId>
+        </camunda:connector>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0dwu4h7</bpmn:incoming>
+      <bpmn:outgoing>Flow_0pm7g02</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1uita4a" sourceRef="Event_1i7qpz5" targetRef="Activity_1a8w8ti" />
+    <bpmn:sequenceFlow id="Flow_1tffsrj" sourceRef="Event_0thdcbd" targetRef="Activity_0t972gu" />
+    <bpmn:sequenceFlow id="Flow_0mqsgnm" sourceRef="Activity_0t972gu" targetRef="Event_1kw4ucy" />
+    <bpmn:sequenceFlow id="Flow_11caqp0" sourceRef="Event_1wnx2f2" targetRef="Activity_0jrwjj1" />
+    <bpmn:sequenceFlow id="Flow_1lauksn" sourceRef="Activity_0jrwjj1" targetRef="Activity_0i92pqw" />
+    <bpmn:sequenceFlow id="Flow_09xmjd1" sourceRef="Activity_0i92pqw" targetRef="Activity_1qs50in" />
+    <bpmn:sequenceFlow id="Flow_1c6bnp8" sourceRef="Activity_1qs50in" targetRef="Activity_1n3kqqy" />
+    <bpmn:sequenceFlow id="Flow_1iu333k" sourceRef="Activity_1n3kqqy" targetRef="Event_0351qf6" />
+    <bpmn:sequenceFlow id="Flow_18j7rbe" sourceRef="Event_18ttpvb" targetRef="Activity_1a3ubge" />
+    <bpmn:sequenceFlow id="Flow_0e4ewq4" sourceRef="Activity_1a3ubge" targetRef="Activity_10xqwch" />
+    <bpmn:sequenceFlow id="Flow_1gzyvab" sourceRef="Activity_10xqwch" targetRef="Activity_15vyhy3" />
+    <bpmn:sequenceFlow id="Flow_059nqbm" sourceRef="Activity_15vyhy3" targetRef="Event_0r5gv8e" />
+    <bpmn:sequenceFlow id="Flow_1nupxgg" sourceRef="Event_1q1fn5a" targetRef="Activity_1v3da2q" />
+    <bpmn:sequenceFlow id="Flow_1kjqhwe" sourceRef="Activity_1uq9i2q" targetRef="Activity_1rrvelr" />
+    <bpmn:sequenceFlow id="Flow_0q819rg" sourceRef="Activity_1mfpaoq" targetRef="Event_1g7ptzg" />
+    <bpmn:sequenceFlow id="Flow_108d09m" name="on Error" sourceRef="Activity_0t972gu" targetRef="Event_0pholux">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${onError}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_046uv29" sourceRef="Activity_1a8w8ti" targetRef="ServiceTask_02162lw" />
+    <bpmn:sequenceFlow id="Flow_0dwu4h7" sourceRef="ServiceTask_02162lw" targetRef="ServiceTask_1xlv29u" />
+    <bpmn:sequenceFlow id="Flow_0pm7g02" sourceRef="ServiceTask_1xlv29u" targetRef="Event_0rtddzn" />
+    <bpmn:endEvent id="Event_1g7ptzg" name="End Workflow">
+      <bpmn:incoming>Flow_0q819rg</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:scriptTask id="Activity_1mfpaoq" name="Print the details and AKS State" scriptFormat="JavaScript">
+      <bpmn:incoming>Flow_076dtpk</bpmn:incoming>
+      <bpmn:outgoing>Flow_0q819rg</bpmn:outgoing>
+      <bpmn:script>//print("The subscription id from previous task is :" + subscription_id);
+//print("the Resource Group Name from previous task is : " + rgname);
+//print("the location Name from previous task is : " + location);
+//print("The PublicKey from previous task is : " + pubkey);
+print("The Kubernetes Cluster Provisioning State is : " + provisioning);</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:serviceTask id="Activity_1rrvelr" name="Update Service Order Status to &#39;Complete&#39;" camunda:asyncAfter="true" camunda:exclusive="false">
+      <bpmn:extensionElements>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="url">
+              <camunda:script scriptFormat="javascript">var orderId = execution.getVariable('orderId');
+var url = "https://service-catalog-ms:9210/api/v1.0/service-catalog/service-orders/"+ orderId;
+url;</camunda:script>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="method">PUT</camunda:inputParameter>
+            <camunda:inputParameter name="headers">
+              <camunda:script scriptFormat="javascript">var header = new java.util.HashMap();
+
+var correlationID = execution.getVariable("x-correlation-id");
+header.put("Content-Type", "application/json"); 
+header.put("accept", "application/json"); 
+header.put("Connection", "keep-alive"); 
+header.put("x-correlation-id", correlationID);
+
+header;</camunda:script>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="payload">
+              <camunda:script scriptFormat="javascript">print();
+
+formData = JSON.parse(formData);
+
+var req = {
+  status: 'Complete',
+  configuredDevices: [
+      "Kubernetes Cluster Provisioning State is : " + provisioning
+]};
+JSON.stringify(req);</camunda:script>
+            </camunda:inputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>http-connector</camunda:connectorId>
+        </camunda:connector>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1kjqhwe</bpmn:incoming>
+      <bpmn:outgoing>Flow_076dtpk</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_076dtpk" sourceRef="Activity_1rrvelr" targetRef="Activity_1mfpaoq" />
+    <bpmn:sequenceFlow id="Flow_041eb0u" sourceRef="Activity_1v3da2q" targetRef="Event_0efjq01" />
+    <bpmn:intermediateCatchEvent id="Event_0efjq01" name="3 Minutes Wait Timer">
+      <bpmn:incoming>Flow_041eb0u</bpmn:incoming>
+      <bpmn:incoming>Flow_13kou07</bpmn:incoming>
+      <bpmn:outgoing>Flow_08brb59</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_1xy109q">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT3M</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:serviceTask id="Activity_1wb5cp6" name="Get the Kubernetes Cluster state">
+      <bpmn:extensionElements>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="headers">
+              <camunda:map>
+                <camunda:entry key="Accept">*/*</camunda:entry>
+                <camunda:entry key="content-type">application/json</camunda:entry>
+                <camunda:entry key="Authorization">${token}</camunda:entry>
+              </camunda:map>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="method">GET</camunda:inputParameter>
+            <camunda:inputParameter name="url">https://management.azure.com/subscriptions/${subscription_id}/resourceGroups/${rgname}/providers/Microsoft.ContainerService/managedClusters/${rname}?api-version=2021-05-01
+</camunda:inputParameter>
+            <camunda:outputParameter name="provisioning">
+              <camunda:script scriptFormat="JavaScript">var response = connector.getVariable("response");
+print(S(response));
+try{
+var arr=S(response).prop("properties").prop("provisioningState").value();
+} catch(err) {
+print(err);
+}
+arr;</camunda:script>
+            </camunda:outputParameter>
+            <camunda:outputParameter name="state">
+              <camunda:script scriptFormat="JavaScript">var response = connector.getVariable("response");
+print(S(response));
+try{
+var arr=S(response).prop("properties").prop("provisioningState").value();
+} catch(err) {
+print(err);
+}
+if (arr == "Creating") {
+   status = true;
+} else {
+   status = false;
+}
+status;</camunda:script>
+            </camunda:outputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>http-connector</camunda:connectorId>
+        </camunda:connector>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="token">
+            <camunda:script scriptFormat="JavaScript">var token = "Bearer "; 
+token += access_token;
+token;</camunda:script>
+          </camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_08brb59</bpmn:incoming>
+      <bpmn:outgoing>Flow_0ka9ezn</bpmn:outgoing>
+      <bpmn:outgoing>Flow_13kou07</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_08brb59" sourceRef="Event_0efjq01" targetRef="Activity_1wb5cp6" />
+    <bpmn:sequenceFlow id="Flow_0ka9ezn" name="Running" sourceRef="Activity_1wb5cp6" targetRef="Activity_1uq9i2q">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${!state}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_13kou07" name="Creating" sourceRef="Activity_1wb5cp6" targetRef="Event_0efjq01">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${state}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+  <bpmn:error id="Error_0ajlbqt" name="RuntimeError" errorCode="java.lang.RuntimeException" />
+  <bpmn:error id="Error_0hyb2by" name="RuntimeError" errorCode="java.lang.RuntimeException" />
+  <bpmn:error id="Error_16gp3q2" name="error" errorCode="java.lang.runtime." />
+  <bpmn:error id="Error_1jjn8a7" name="Error_1mg410s" />
+  <bpmn:error id="Error_0x3mscn" name="Error_36b0md0" />
+  <bpmn:error id="Error_1xsrsmi" name="Error_0vqqn3s" />
+  <bpmn:error id="Error_1hefqe6" name="Error_3qko6fq" />
+  <bpmn:error id="Error_1mdt6jn" name="Error_28uuoun" />
+  <bpmn:error id="Error_140sn4g" name="Error_20g2i7c" />
+  <bpmn:error id="Error_1n59o2x" name="Error_0savo2b" />
+  <bpmn:error id="Error_1q1b63q" name="Error_3337l9s" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_0wu1azv">
+      <bpmndi:BPMNShape id="Participant_1i2dn3o_di" bpmnElement="Participant_1i2dn3o" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1170" height="1350" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_0a839kf_di" bpmnElement="Lane_0a839kf" isHorizontal="true">
+        <dc:Bounds x="190" y="790" width="1140" height="260" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_18xoy9k_di" bpmnElement="Lane_18xoy9k" isHorizontal="true">
+        <dc:Bounds x="190" y="1050" width="1140" height="380" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_17b9uz0_di" bpmnElement="Lane_17b9uz0" isHorizontal="true">
+        <dc:Bounds x="190" y="560" width="1140" height="230" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_1jr7x72_di" bpmnElement="Lane_1jr7x72" isHorizontal="true">
+        <dc:Bounds x="190" y="350" width="1140" height="210" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_0pcw5xz_di" bpmnElement="Lane_0pcw5xz" isHorizontal="true">
+        <dc:Bounds x="190" y="80" width="1140" height="270" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_13kou07_di" bpmnElement="Flow_13kou07">
+        <di:waypoint x="670" y="1360" />
+        <di:waypoint x="670" y="1400" />
+        <di:waypoint x="530" y="1400" />
+        <di:waypoint x="530" y="1338" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="579" y="1382" width="42" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ka9ezn_di" bpmnElement="Flow_0ka9ezn">
+        <di:waypoint x="670" y="1280" />
+        <di:waypoint x="670" y="1240" />
+        <di:waypoint x="620" y="1240" />
+        <di:waypoint x="620" y="1200" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="625" y="1222" width="41" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_08brb59_di" bpmnElement="Flow_08brb59">
+        <di:waypoint x="548" y="1320" />
+        <di:waypoint x="620" y="1320" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_041eb0u_di" bpmnElement="Flow_041eb0u">
+        <di:waypoint x="430" y="1200" />
+        <di:waypoint x="430" y="1320" />
+        <di:waypoint x="512" y="1320" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_076dtpk_di" bpmnElement="Flow_076dtpk">
+        <di:waypoint x="810" y="1160" />
+        <di:waypoint x="890" y="1160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0pm7g02_di" bpmnElement="Flow_0pm7g02">
+        <di:waypoint x="810" y="140" />
+        <di:waypoint x="856" y="140" />
+        <di:waypoint x="856" y="230" />
+        <di:waypoint x="902" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0dwu4h7_di" bpmnElement="Flow_0dwu4h7">
+        <di:waypoint x="645" y="140" />
+        <di:waypoint x="710" y="140" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_046uv29_di" bpmnElement="Flow_046uv29">
+        <di:waypoint x="490" y="230" />
+        <di:waypoint x="518" y="230" />
+        <di:waypoint x="518" y="140" />
+        <di:waypoint x="545" y="140" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_108d09m_di" bpmnElement="Flow_108d09m">
+        <di:waypoint x="430" y="410" />
+        <di:waypoint x="430" y="380" />
+        <di:waypoint x="522" y="380" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="440" y="363" width="40" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0q819rg_di" bpmnElement="Flow_0q819rg">
+        <di:waypoint x="990" y="1160" />
+        <di:waypoint x="1062" y="1160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1kjqhwe_di" bpmnElement="Flow_1kjqhwe">
+        <di:waypoint x="640" y="1160" />
+        <di:waypoint x="710" y="1160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1nupxgg_di" bpmnElement="Flow_1nupxgg">
+        <di:waypoint x="328" y="1160" />
+        <di:waypoint x="380" y="1160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_059nqbm_di" bpmnElement="Flow_059nqbm">
+        <di:waypoint x="820" y="910" />
+        <di:waypoint x="922" y="910" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1gzyvab_di" bpmnElement="Flow_1gzyvab">
+        <di:waypoint x="645" y="910" />
+        <di:waypoint x="720" y="910" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0e4ewq4_di" bpmnElement="Flow_0e4ewq4">
+        <di:waypoint x="480" y="910" />
+        <di:waypoint x="545" y="910" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_18j7rbe_di" bpmnElement="Flow_18j7rbe">
+        <di:waypoint x="328" y="910" />
+        <di:waypoint x="380" y="910" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1iu333k_di" bpmnElement="Flow_1iu333k">
+        <di:waypoint x="990" y="650" />
+        <di:waypoint x="1072" y="650" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1c6bnp8_di" bpmnElement="Flow_1c6bnp8">
+        <di:waypoint x="820" y="650" />
+        <di:waypoint x="890" y="650" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_09xmjd1_di" bpmnElement="Flow_09xmjd1">
+        <di:waypoint x="640" y="650" />
+        <di:waypoint x="720" y="650" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1lauksn_di" bpmnElement="Flow_1lauksn">
+        <di:waypoint x="480" y="650" />
+        <di:waypoint x="540" y="650" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11caqp0_di" bpmnElement="Flow_11caqp0">
+        <di:waypoint x="328" y="650" />
+        <di:waypoint x="380" y="650" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0mqsgnm_di" bpmnElement="Flow_0mqsgnm">
+        <di:waypoint x="480" y="450" />
+        <di:waypoint x="572" y="450" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1tffsrj_di" bpmnElement="Flow_1tffsrj">
+        <di:waypoint x="328" y="450" />
+        <di:waypoint x="380" y="450" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1uita4a_di" bpmnElement="Flow_1uita4a">
+        <di:waypoint x="328" y="230" />
+        <di:waypoint x="390" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_1i7qpz5_di" bpmnElement="Event_1i7qpz5" bioc:stroke="#000000" bioc:fill="#ffffff" color:background-color="#ffffff" color:border-color="#000000">
+        <dc:Bounds x="292" y="212" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1a8w8ti_di" bpmnElement="Activity_1a8w8ti" bioc:stroke="#fb8c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#fb8c00">
+        <dc:Bounds x="390" y="190" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0k7sgfa_di" bpmnElement="Event_0rtddzn" bioc:stroke="#1e88e5" bioc:fill="#bbdefb" color:background-color="#bbdefb" color:border-color="#1e88e5">
+        <dc:Bounds x="902" y="212" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="878" y="255" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0t972gu_di" bpmnElement="Activity_0t972gu" bioc:stroke="#fb8c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#fb8c00">
+        <dc:Bounds x="380" y="410" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_087o78i_di" bpmnElement="Event_0thdcbd" bioc:stroke="#1e88e5" bioc:fill="#bbdefb" color:background-color="#bbdefb" color:border-color="#1e88e5">
+        <dc:Bounds x="292" y="432" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="281" y="475" width="59" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0f6q3m4_di" bpmnElement="Event_1kw4ucy" bioc:stroke="#1e88e5" bioc:fill="#bbdefb" color:background-color="#bbdefb" color:border-color="#1e88e5">
+        <dc:Bounds x="572" y="432" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="548" y="475" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0jrwjj1_di" bpmnElement="Activity_0jrwjj1" bioc:stroke="#fb8c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#fb8c00">
+        <dc:Bounds x="380" y="610" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1qs50in_di" bpmnElement="Activity_1qs50in" bioc:stroke="#fb8c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#fb8c00">
+        <dc:Bounds x="720" y="610" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0do2kxr_di" bpmnElement="Event_1wnx2f2" bioc:stroke="#1e88e5" bioc:fill="#bbdefb" color:background-color="#bbdefb" color:border-color="#1e88e5">
+        <dc:Bounds x="292" y="632" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="269" y="675" width="87" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1n3kqqy_di" bpmnElement="Activity_1n3kqqy" bioc:stroke="#43a047" bioc:fill="#c8e6c9" color:background-color="#c8e6c9" color:border-color="#43a047">
+        <dc:Bounds x="890" y="610" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0aq19k1_di" bpmnElement="Event_0351qf6" bioc:stroke="#1e88e5" bioc:fill="#bbdefb" color:background-color="#bbdefb" color:border-color="#1e88e5">
+        <dc:Bounds x="1072" y="632" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1054" y="675" width="73" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0i92pqw_di" bpmnElement="Activity_0i92pqw" bioc:stroke="#43a047" bioc:fill="#c8e6c9" color:background-color="#c8e6c9" color:border-color="#43a047">
+        <dc:Bounds x="540" y="610" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0b96vre_di" bpmnElement="Activity_1a3ubge" bioc:stroke="#fb8c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#fb8c00">
+        <dc:Bounds x="380" y="870" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_10xqwch_di" bpmnElement="Activity_10xqwch" bioc:stroke="#fb8c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#fb8c00">
+        <dc:Bounds x="545" y="870" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_15vyhy3_di" bpmnElement="Activity_15vyhy3" bioc:stroke="#43a047" bioc:fill="#c8e6c9" color:background-color="#c8e6c9" color:border-color="#43a047">
+        <dc:Bounds x="720" y="870" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_050qukk_di" bpmnElement="Event_0r5gv8e" bioc:stroke="#1e88e5" bioc:fill="#bbdefb" color:background-color="#bbdefb" color:border-color="#1e88e5">
+        <dc:Bounds x="922" y="892" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="897" y="935" width="87" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1cteec2_di" bpmnElement="Event_18ttpvb" bioc:stroke="#1e88e5" bioc:fill="#bbdefb" color:background-color="#bbdefb" color:border-color="#1e88e5">
+        <dc:Bounds x="292" y="892" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="275" y="935" width="72" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_067k6cp_di" bpmnElement="Activity_1v3da2q" bioc:stroke="#fb8c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#fb8c00">
+        <dc:Bounds x="380" y="1120" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1snfrkx_di" bpmnElement="Event_1q1fn5a" bioc:stroke="#1e88e5" bioc:fill="#bbdefb" color:background-color="#bbdefb" color:border-color="#1e88e5">
+        <dc:Bounds x="292" y="1142" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="282" y="1185" width="56" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1uq9i2q_di" bpmnElement="Activity_1uq9i2q" bioc:stroke="#43a047" bioc:fill="#c8e6c9" color:background-color="#c8e6c9" color:border-color="#43a047">
+        <dc:Bounds x="540" y="1120" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0pholux_di" bpmnElement="Event_0pholux">
+        <dc:Bounds x="522" y="362" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_02162lw_di" bpmnElement="ServiceTask_02162lw" bioc:stroke="#8e24aa" bioc:fill="#e1bee7" color:background-color="#e1bee7" color:border-color="#8e24aa">
+        <dc:Bounds x="545" y="100" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_1xlv29u_di" bpmnElement="ServiceTask_1xlv29u" bioc:stroke="#43a047" bioc:fill="#c8e6c9" color:background-color="#c8e6c9" color:border-color="#43a047">
+        <dc:Bounds x="710" y="100" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1g7ptzg_di" bpmnElement="Event_1g7ptzg" bioc:stroke="#e53935" bioc:fill="#ffcdd2" color:background-color="#ffcdd2" color:border-color="#e53935">
+        <dc:Bounds x="1062" y="1142" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1046" y="1185" width="68" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1x8u4ez_di" bpmnElement="Activity_1mfpaoq" bioc:stroke="#8e24aa" bioc:fill="#e1bee7" color:background-color="#e1bee7" color:border-color="#8e24aa">
+        <dc:Bounds x="890" y="1120" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1rrvelr_di" bpmnElement="Activity_1rrvelr">
+        <dc:Bounds x="710" y="1120" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0efjq01_di" bpmnElement="Event_0efjq01">
+        <dc:Bounds x="512" y="1302" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="493" y="1264.5" width="73" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1wb5cp6_di" bpmnElement="Activity_1wb5cp6" bioc:stroke="#fb8c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#fb8c00">
+        <dc:Bounds x="620" y="1280" width="100" height="80" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
