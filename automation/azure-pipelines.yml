@@ -2,13 +2,13 @@
 trigger:
   - development
 
-
 - task: HelmDeploy@0
-  displayName: Helm install
   inputs:
-    azureSubscriptionEndpoint: $(azureSubscriptionEndpoint)
-    azureResourceGroup: $(azureResourceGroup)
-    kubernetesCluster: $(kubernetesCluster)
-    command: install
-    chartType: FilePath
-    chartPath: Application/charts/sampleapp
+    connectionType: 'Kubernetes Service Connection'
+    kubernetesServiceConnection: 'testkcluster1'
+    namespace: 'bpa-ns'
+    command: 'install'
+    chartType: 'Name'
+    chartName: 'my-app'
+    releaseName: 'bpa-rel'
+    valueFile: 'myapp/values.yaml'
