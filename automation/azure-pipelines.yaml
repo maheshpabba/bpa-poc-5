@@ -6,4 +6,14 @@
 trigger:
 - development
 
-
+- task: HelmDeploy@0
+  inputs:
+    connectionType: 'Kubernetes Service Connection'
+    kubernetesServiceConnection: 'testkcluster1'
+    namespace: 'bpa-ns'
+    command: 'install'
+    chartType: 'FilePath'
+    chartPath: 'my-app'
+    chartVersion: '0.1'
+    releaseName: 'bpa-rel'
+    valueFile: 'my-app/values.yaml'
