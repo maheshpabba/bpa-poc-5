@@ -19,7 +19,7 @@ stages:
     steps:
     - checkout: self
       clean: true 
-      path: ../
+      path: /
 
     - task: HelmDeploy@0
       displayName: helm build
