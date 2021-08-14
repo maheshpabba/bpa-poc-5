@@ -26,9 +26,6 @@ stages:
         connectionType: 'Kubernetes Service Connection'
         kubernetesServiceConnection: $(cluster_name)
         namespace: $(bpa_ns)
-        command: 'install'
-        chartType: 'FilePath'
-        chartPath: 'my-app/'
-        releaseName: $(bpa-rel)
-        valueFile: 'my-app/values.yaml'
+        command: 'delete'
+        arguments: $(bpa-rel)
 
