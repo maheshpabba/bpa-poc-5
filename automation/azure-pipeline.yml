@@ -17,6 +17,10 @@ stages:
   jobs:
   - job: One
     steps:
+    - checkout: self
+      clean: true 
+      path: ../
+
     - task: HelmDeploy@0
       displayName: helm build
       inputs:
@@ -25,7 +29,7 @@ stages:
         namespace: $(bpa_ns)
         command: 'install'
         chartType: 'FilePath'
-        chartPath: '../my-app/'
+        chartPath: 'my-app/'
         releaseName: $(bpa-rel)
-        valueFile: '../my-app/values.yaml'
+        valueFile: 'my-app/values.yaml'
 
