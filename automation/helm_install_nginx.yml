@@ -1,0 +1,34 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+name: $(Date:yyyyMMdd)$(Rev:.r)
+trigger:
+  branches:
+    include:
+      - development
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+- stage: Build
+  jobs:
+  - job: One
+    steps:
+    - checkout: self
+      clean: true 
+
+    - task: HelmDeploy@0
+      displayName: helm build
+      inputs:
+        connectionType: 'Kubernetes Service Connection'
+        kubernetesServiceConnection: $(cluster_name)
+        namespace: $(bpa_ns)
+        command: 'install'
+        chartType: 'FilePath'
+        chartPath: 'my-app/'
+        releaseName: $(bpa-rel)
+        valueFile: 'my-app/values.yaml'
+
