@@ -13,13 +13,15 @@ pool:
   vmImage: ubuntu-latest
 
 stages:
-- stage: Build
+- stage: Install
   jobs:
   - job: One
     steps:
     - checkout: self
-      clean: true 
-
+      clean: true
+    
+  - job: two
+    steps:
     - task: HelmDeploy@0
       displayName: helm build
       inputs:
