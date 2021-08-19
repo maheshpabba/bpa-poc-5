@@ -25,7 +25,7 @@ stages:
         repository: '$(imageName)'
         command: 'buildAndPush'
         Dockerfile: 'microservices/mysql/Dockerfile.mysql'
-        tags: '$(imageName)-$(Build.BuildID)'
+        tags: '$(imageName)-5.7'
 #        tags: '$(Build.SourceBranchName)-$(Build.BuildId)'
   - job: two
     steps:
