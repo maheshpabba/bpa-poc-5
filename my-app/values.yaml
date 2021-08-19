@@ -2,6 +2,25 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+mysql:
+  persistence:
+    enabled: true
+    storageClass: default
+    accessMode: ReadWriteOnce
+    size: 3Gi
+    annotations: {}
+
+  initializationFiles: 
+    first-db.sql: |-
+      CREATE DATABASE IF NOT EXISTS `votingdb`;
+      USE votingdb;
+      CREATE USER 'votinguser'@'%' IDENTIFIED BY 'WeLcOmE123';
+      GRANT ALL PRIVILEGES ON *.* TO 'votinguser'@'%';
+      GRANT ALL PRIVILEGES ON `votingdb`.* TO 'votinguser'@'%';
+      CREATE TABLE `votingtable` (`votevalue` varchar(128)) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  image: "mysql"
+  imageTag: "mysql-5.7"
+  mysqlRootPassword: WeLcOmE123
 ingress_controller:
   external: false
   service:
@@ -23,11 +42,14 @@ ingress_controller:
     type: LoadBalancer
 imageVersions:
   ingress_controller: nginx-3.0.0-1
+  mysql: mysql-5.7
 global:
   ingress_controller:
     create: true
   registry:
     server: attbpa.azurecr.io
+  image: 
+    mysql: mysql-5.7
 registry:
   password: 04xQyCfuOKfhWdFQsLhaHIlnZymh/AAU
   username: attbpa
