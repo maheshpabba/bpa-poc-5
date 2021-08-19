@@ -32,7 +32,7 @@ stages:
         echo "This is the Job Docker Build"
         echo "##vso[task.setvariable variable=doThing;isOutput=true]Yes" #set variable doThing to Yes
 - stage: helmdeploy
-  dependsOn: One
+  dependsOn: DockerBuild
   condition: eq(dependencies.One.outputs['DetermineResult.doThing'], 'Yes') #map doThing and check the value
   jobs:
   - job: two
