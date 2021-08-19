@@ -22,7 +22,8 @@ stages:
     - task: Docker@2
       inputs:
         containerRegistry: 'docker_acr'
-        repository: '$(imageName)'
+        repository: mysql
+#        repository: '$(imageName)'
         command: 'buildAndPush'
         Dockerfile: 'microservices/mysql/Dockerfile.mysql'
         tags: '$(imageName)-5.7'
