@@ -33,16 +33,12 @@ spec:
 {{ toYaml . | indent 8 }}
 {{- end }}
     spec:
-      
+
       {{- if .Values.global.registry }}
       imagePullSecrets:
         - name: {{ template "bpa.fullname" . }}-dcr
       {{- end }}
-#      {{- if .Values.imagePullSecrets }}
-#      imagePullSecrets:
-#{{ toYaml .Values.imagePullSecrets | indent 8 }}
-#      {{- end }}
-      
+
       serviceAccountName: {{ template "mysql.serviceAccountName" . }}
       containers:
       - name: {{ template "mysql.fullname" . }}
@@ -137,7 +133,7 @@ spec:
             - "--ignore-db-dir=lost+found"
         volumeMounts:
         - name: data
-          mountPath: /var/lib/mysql
+          mountPath: /var/lib/mysql/
           {{- if .Values.persistence.subPath }}
           subPath: {{ .Values.persistence.subPath }}
           {{- end }}
