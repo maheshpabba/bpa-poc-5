@@ -13,13 +13,34 @@ pool:
   vmImage: ubuntu-latest
 
 stages:
-- stage: Build
+- stage: DockerBuild
   jobs:
   - job: One
     steps:
     - checkout: self
-      clean: true 
-
+      clean: true
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'docker_acr'
+        repository: mysql
+#        repository: '$(imageName)'
+        command: 'buildAndPush'
+        Dockerfile: 'microservices/mysql/Dockerfile.mysql'
+        tags: 'mysql-5.7'
+#        tags: '$(imageName)-5.7'
+#        tags: '$(Build.SourceBranchName)-$(Build.BuildId)'
+#    - bash: |
+#        echo "This is the Job Docker Build"
+#        echo "##vso[task.setvariable variable=doThing;isOutput=true]Yes" #set variable doThing to Yes
+- stage: helmdeploy
+  dependsOn: DockerBuild
+#  condition: eq(dependencies.One.outputs['DetermineResult.doThing'], 'Yes') #map doThing and check the value
+  jobs:
+  - job: two
+    steps:
+    - checkout: self
+      clean: true
+    - script: echo "Docker Build was successful, hence deploying helm"
     - task: HelmDeploy@0
       displayName: helm build
       inputs:
