@@ -21,6 +21,7 @@ mysql:
   image: "mysql"
   imageTag: "mysql-5.7"
   mysqlRootPassword: WeLcOmE123
+  imagePullPolicy: Always
 ingress_controller:
   external: false
   service:
@@ -48,8 +49,6 @@ global:
     create: true
   registry:
     server: attbpa.azurecr.io
-  image: 
-    mysql: mysql-5.7
 registry:
   password: 04xQyCfuOKfhWdFQsLhaHIlnZymh/AAU
   username: attbpa
