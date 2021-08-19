@@ -19,7 +19,14 @@ stages:
     steps:
     - checkout: self
       clean: true
-    
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'docker_acr'
+        repository: '$(imageName)'
+        command: 'buildAndPush'
+        Dockerfile: 'microservices/mysql/Dockerfile.mysql'
+        tags: '$(imageName)-$(Build.BuildID)'
+#        tags: '$(Build.SourceBranchName)-$(Build.BuildId)'
   - job: two
     steps:
     - task: HelmDeploy@0
