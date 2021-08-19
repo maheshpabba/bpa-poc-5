@@ -43,7 +43,6 @@ spec:
       containers:
       - name: {{ template "mysql.fullname" . }}
         image: {{ template "imageRegistryUrl" . }}/{{ .Values.image }}:{{ .Values.imageTag }}
-#        image: {{ template "imageRegistryUrl" . }}/mysql:{{ .Values.global.image.mysql }}
         imagePullPolicy: {{ .Values.imagePullPolicy | quote }}
 
         {{- with .Values.args }}
