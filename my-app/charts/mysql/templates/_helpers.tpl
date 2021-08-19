@@ -49,3 +49,7 @@ Create the name of the service account to use
 {{- .Values.global.registry.server -}}
 {{- end -}}
 {{- end }}
+
+{{- define "bpa.fullname" -}}
+{{- printf "%s-%s" .Release.Name "bpa" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
