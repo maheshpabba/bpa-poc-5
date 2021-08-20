@@ -14,7 +14,7 @@ pool:
 
 variables:
 - name: images
-  value: [mysql]
+  value: mysql
 
 stages:
 - stage: DockerBuild
