@@ -22,11 +22,18 @@ mysql:
   imageTag: "mysql-5.7"
   mysqlRootPassword: WeLcOmE123
   imagePullPolicy: Always
+  name: mysql
+voting:
+  replicaCount: 1
+  image: "voting"
+  imageTag: "voting-0.1"
+  imagePullPolicy: Always
+  name: voting
 ingress_controller:
   external: false
   service:
     create: true
-    externalIPs: [10.240.0.10]
+    externalIPs: []
     httpPort:
       enable: false
       nodePort: 30100
@@ -59,3 +66,4 @@ k8sdashboard:
     metricsscraper: metrics-scraper-v1.0.0
   nodePort:
     https: 30801
+ 

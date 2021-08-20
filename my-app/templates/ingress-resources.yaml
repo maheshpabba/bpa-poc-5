@@ -22,26 +22,9 @@ spec:
   - http:
       paths:
       - backend:
-          serviceName: kong
-          servicePort: 8443
-        path: /bpa(/|$)(.*)
-      - backend:
-          serviceName: portal
-          servicePort: 8081
-        path: /portal(/|$)(.*)
-      - backend:
-          serviceName: elk-public
-          servicePort: 5601
-        path: /logs(/|$)(.*)
-      - backend:
-          serviceName: grafana
-          servicePort: 3000
-        path: /monitoring(/|$)(.*)
-     {{- if .Values.k8sdashboard.create }}
-      - backend:
-          serviceName: kubernetes-dashboard
-          servicePort: 443
-        path: /dashboard(/|$)(.*)
+          serviceName: voting
+          servicePort: 5000
+        path: /
      {{- end }}
 
 {{- end }}
