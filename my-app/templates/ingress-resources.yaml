@@ -25,6 +25,5 @@ spec:
           serviceName: voting
           servicePort: 5000
         path: /
-     {{- end }}
 
 {{- end }}
