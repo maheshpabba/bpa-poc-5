@@ -22,7 +22,7 @@ stages:
       clean: true
     - template: create_docker_images.yml
       parameters:
-        images: ["mysql"]
+        images: ["mysql","voting"]
     
 - stage: helmdeploy
   dependsOn: DockerBuild
