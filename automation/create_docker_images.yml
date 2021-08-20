@@ -6,15 +6,9 @@ parameters:
 steps:
 - ${{ each image in parameters.images }}:
   - task: Docker@2
-        inputs:
-          containerRegistry: 'docker_acr'
-#          repository: mysql
-          repository: ${{ image }}
-          command: 'buildAndPush'
-          Dockerfile: 'microservices/${{ image }}/Dockerfile.${{ image }}'
-#          tags: 'mysql-5.7'
-  #        tags: '$(imageName)-5.7'
-          tags: '$(Build.SourceBranchName)-$(Build.BuildId)'
-  #    - bash: |
-  #        echo "This is the Job Docker Build"
-  #        echo "##vso[task.setvariable variable=doThing;isOutput=true]Yes" #set variable doThing to Yes
+    inputs:
+      containerRegistry: 'docker_acr'
+      repository: ${{ image }}
+      command: 'buildAndPush'
+      Dockerfile: 'microservices/${{ image }}/Dockerfile.${{ image }}'
+      tags: '$(Build.SourceBranchName)-$(Build.BuildId)'
