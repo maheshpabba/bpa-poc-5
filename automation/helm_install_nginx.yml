@@ -44,5 +44,5 @@ stages:
         chartPath: 'my-app/'
         releaseName: $(bpa-rel)
         valueFile: 'my-app/values.yaml'
-        arguments: '--set mysql.imageTag = $(Build.SourceBranchName)-$(Build.BuildId)'
+        arguments: '--set mysql.imageTag=$(Build.SourceBranchName)-$(Build.BuildId)'
 
