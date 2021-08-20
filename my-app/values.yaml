@@ -33,7 +33,7 @@ ingress_controller:
   external: false
   service:
     create: true
-    externalIPs: [10.240.0.10]
+    externalIPs: [40.71.238.9]
     httpPort:
       enable: false
       nodePort: 30100
