@@ -28,14 +28,6 @@ spec:
           imagePullPolicy: {{ .Values.voting.imagePullPolicy }}
           ports:
             - containerPort: 5000
-          livenessProbe:
-            httpGet:
-              path: /
-              port: 5000
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 5000
     {{- if .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}
