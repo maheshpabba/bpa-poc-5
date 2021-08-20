@@ -31,15 +31,12 @@ spec:
             - '0.0.0.0'
             - 'app:app'
           ports:
-            - name: gunicorn
-              containerPort: 5000
+            - containerPort: 5000
           livenessProbe:
-            initialDelaySeconds: 10
-            exec:
-              command:
-                - /bin/sh
-                - -c 
-                - "pidof -x gunicorn"
+          initialDelaySeconds: 10
+            httpGet:
+              path: /
+              port: 5000
           readinessProbe:
             initialDelaySeconds: 10
             httpGet:
