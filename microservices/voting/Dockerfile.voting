@@ -2,7 +2,7 @@ FROM python:3.6
 
 WORKDIR /usr/src/app
 
-COPY ../static/ ../templates/ ../requirements.txt ../main.py ../config_file.cfg  ./
+COPY static templates requirements.txt main.py config_file.cfg  ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 CMD [ "python", "./main.py" ]
