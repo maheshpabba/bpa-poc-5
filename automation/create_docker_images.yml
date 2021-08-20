@@ -10,5 +10,6 @@ steps:
       containerRegistry: 'docker_acr'
       repository: ${{ image }}
       command: 'buildAndPush'
-      Dockerfile: 'microservices/${{ image }}/Dockerfile.${{ image }}'
+      Dockerfile: '$(Build.SourcesDirectory)/microservices/${{ image }}/Dockerfile.${{ image }}'
+      buildContext: '$(Build.SourcesDirectory)/microservices/${{ image }}'
       tags: '$(Build.SourceBranchName)-$(Build.BuildId)'
