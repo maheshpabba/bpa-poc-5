@@ -1,9 +1,9 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: {{ values.voting.name }}
+  name: {{ Values.voting.name }}
   labels:
-    app: {{ values.voting.name }}
+    app: {{ Values.voting.name }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
@@ -12,7 +12,7 @@ spec:
   template:
     metadata:
       labels:
-        app: {{ values.voting.name }}
+        app: {{ Values.voting.name }}
         release: {{ .Release.Name }}
     spec:
       containers:
@@ -42,9 +42,9 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ values.voting.name }}
+  name: {{ Values.voting.name }}
   labels:
-    app: {{ values.voting.name }}
+    app: {{ Values.voting.name }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
@@ -55,6 +55,6 @@ spec:
       protocol: TCP
       name: {{ .Values.voting.name }}
   selector:
-    app: {{ values.voting.name }}
+    app: {{ Values.voting.name }}
     release: {{ .Release.Name }}
 
