@@ -7,6 +7,8 @@ imageTag: "5.7.30"
 strategy:
   type: Recreate
 
+mysql:
+  name: mysql
 #busybox:
 #  image: "busybox"
 #  tag: "1.32"
