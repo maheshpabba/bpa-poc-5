@@ -11,14 +11,17 @@ spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: voting
-      app.kubernetes.io/part-of: voting
+      app: {{ .Values.voting.name }}
   template:
     metadata:
       labels:
         app: {{ .Values.voting.name }}
         release: {{ .Release.Name }}
     spec:
+      {{- if .Values.global.registry }}
+      imagePullSecrets:
+        - name: {{ template "bpa.fullname" . }}-dcr
+      {{- end }}
       containers:
         - name: voting
           image: {{ template "imageRegistryUrl" . }}/{{ .Values.voting.image }}:{{ .Values.voting.imageTag }}
