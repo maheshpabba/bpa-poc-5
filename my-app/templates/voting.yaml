@@ -23,9 +23,6 @@ spec:
         - name: voting
           image: {{ template "imageRegistryUrl" . }}/{{ .Values.voting.image }}:{{ .Values.voting.imageTag }}
           imagePullPolicy: {{ .Values.voting.imagePullPolicy }}
-          env:
-          - name: PORT
-            value: 5000
           ports:
             - containerPort: 5000
           livenessProbe:
