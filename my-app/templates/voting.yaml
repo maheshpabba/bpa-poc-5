@@ -26,22 +26,8 @@ spec:
         - name: voting
           image: {{ template "imageRegistryUrl" . }}/{{ .Values.voting.image }}:{{ .Values.voting.imageTag }}
           imagePullPolicy: {{ .Values.voting.imagePullPolicy }}
-          args:
-            - '--bind'
-            - '0.0.0.0'
-            - 'app:app'
           ports:
             - containerPort: 5000
-          livenessProbe:
-          initialDelaySeconds: 10
-            httpGet:
-              path: /
-              port: 5000
-          readinessProbe:
-            initialDelaySeconds: 10
-            httpGet:
-              path: /
-              port: 5000
     {{- if .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}
