@@ -37,7 +37,7 @@ def index():
     cursor = connection.cursor()
 
     if request.method == 'GET':   
-        cursor.execute('''Select votevalue, count(votevalue) as count From azurevote.votingtable
+        cursor.execute('''Select votevalue, count(votevalue) as count From votingdb.votingtable
         group by votevalue''')
         results = cursor.fetchall()
 
@@ -67,7 +67,7 @@ def index():
             connection.commit()
             
             # Get current values
-            cursor.execute('''Select votevalue, count(votevalue) as count From azurevote.votingtable
+            cursor.execute('''Select votevalue, count(votevalue) as count From votingdb.votingtable
             group by votevalue''')
             results = cursor.fetchall()
 
