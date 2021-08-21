@@ -44,7 +44,7 @@ ingress_controller:
       nodePort: 30101
       port: 443
       targetPort: 443
-    loadBalancerIP: '40.71.238.9'
+    loadBalancerIP: ''
     loadBalancerSourceRanges: []
     name: ingress-nginx
     type: LoadBalancer

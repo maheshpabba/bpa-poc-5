@@ -37,7 +37,7 @@ def index():
     cursor = connection.cursor()
 
     if request.method == 'GET':   
-        cursor.execute('''Select votevalue, count(votevalue) as count From azurevote.azurevote
+        cursor.execute('''Select votevalue, count(votevalue) as count From azurevote.votingtable
         group by votevalue''')
         results = cursor.fetchall()
 
@@ -56,18 +56,18 @@ def index():
         if request.form['vote'] == 'reset':
             
             # Empty table and return results
-            cursor.execute('''Delete FROM azurevote''')
+            cursor.execute('''Delete FROM votingtable''')
             connection.commit()
             return render_template("index.html", value1=vote1, value2=vote2, button1=button1, button2=button2, title=title)
         else:
 
             # Insert vote result into DB
             vote = request.form['vote']
-            cursor.execute('''INSERT INTO azurevote (votevalue) VALUES (%s)''', (vote))
+            cursor.execute('''INSERT INTO votingtable (votevalue) VALUES (%s)''', (vote))
             connection.commit()
             
             # Get current values
-            cursor.execute('''Select votevalue, count(votevalue) as count From azurevote.azurevote
+            cursor.execute('''Select votevalue, count(votevalue) as count From azurevote.votingtable
             group by votevalue''')
             results = cursor.fetchall()
 
@@ -85,7 +85,7 @@ def index():
 def results():
     connection = mysql.connect()
     cursor = connection.cursor()
-    cursor.execute('''Select * FROM azurevote''')
+    cursor.execute('''Select * FROM votingtable''')
     rv = cursor.fetchall()
     return str(rv)
 
