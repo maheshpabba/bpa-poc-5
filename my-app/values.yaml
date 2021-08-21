@@ -33,8 +33,7 @@ ingress_controller:
   external: false
   service:
     create: true
-#    externalIPs: [10.240.0.10]
-    externalIPs: [40.71.238.9]
+    externalIPs: [10.240.0.10]
     httpPort:
       enable: false
       nodePort: 30100
@@ -45,7 +44,7 @@ ingress_controller:
       nodePort: 30101
       port: 443
       targetPort: 443
-    loadBalancerIP: ''
+    loadBalancerIP: '40.71.238.9'
     loadBalancerSourceRanges: []
     name: ingress-nginx
     type: LoadBalancer

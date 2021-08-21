@@ -11,7 +11,7 @@ metadata:
     release: {{ .Release.Name }}
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /$2
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
 
 spec:
 #  tls:
@@ -22,7 +22,7 @@ spec:
   - http:
       paths:
       - backend:
-          serviceName: voting
+          serviceName: {{ .Values.voting.name }}
           servicePort: 5000
         path: /
 
