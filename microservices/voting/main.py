@@ -58,7 +58,7 @@ def index():
             # Empty table and return results
             cursor.execute('''Delete FROM votingtable''')
             connection.commit()
-            return render_template("index.html", value1=vote1, value2=vote2, button1=button1, button2=button2, title=title)
+            return render_template("./index.html", value1=vote1, value2=vote2, button1=button1, button2=button2, title=title)
         else:
 
             # Insert vote result into DB
@@ -79,7 +79,7 @@ def index():
                     vote2 = i[1]         
                 
             # Return results
-            return render_template("index.html", value1=vote1, value2=vote2, button1=button1, button2=button2, title=title)
+            return render_template("./index.html", value1=vote1, value2=vote2, button1=button1, button2=button2, title=title)
 
 @app.route('/results')
 def results():
