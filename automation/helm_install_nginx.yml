@@ -30,6 +30,22 @@ stages:
   jobs:
   - job: two
     steps:
+    - script: echo "Creating if bpa-ns doesnot exist"
+    - task: Kubernetes@1
+      inputs:
+        connectionType: 'Kubernetes Service Connection'
+        kubernetesServiceEndpoint: $(cluster_name)
+        command: 
+        useConfigurationFile: true
+        configurationType: 'inline'
+        inline: |
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+          name: $(bpa_ns)
+
+  - job: three
+    steps:
     - checkout: self
       clean: true
     - script: echo "Docker Build was successful, hence deploying helm"
