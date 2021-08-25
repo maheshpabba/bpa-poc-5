@@ -23,11 +23,6 @@ stages:
     - template: create_docker_images.yml
       parameters:
         images: ["mysql","voting"]
-    
-- stage: helmdeploy
-  dependsOn: DockerBuild
-#  condition: eq(dependencies.One.outputs['DetermineResult.doThing'], 'Yes') #map doThing and check the value
-  jobs:
   - job: two
     steps:
     - script: echo "Creating if bpa-ns doesnot exist"
@@ -43,9 +38,11 @@ stages:
           kind: Namespace
           metadata:
             name: $(bpa_ns)
-        secretType: 'dockerRegistry'
-        containerRegistryType: 'Azure Container Registry'
-
+    
+- stage: helmdeploy
+  dependsOn: DockerBuild
+#  condition: eq(dependencies.One.outputs['DetermineResult.doThing'], 'Yes') #map doThing and check the value
+  jobs:
   - job: three
     steps:
     - checkout: self
