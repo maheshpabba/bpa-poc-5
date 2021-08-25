@@ -35,14 +35,16 @@ stages:
       inputs:
         connectionType: 'Kubernetes Service Connection'
         kubernetesServiceEndpoint: $(cluster_name)
-        command: 
+        command: 'apply'
         useConfigurationFile: true
         configurationType: 'inline'
         inline: |
           apiVersion: v1
           kind: Namespace
           metadata:
-          name: $(bpa_ns)
+            name: $(bpa_ns)
+        secretType: 'dockerRegistry'
+        containerRegistryType: 'Azure Container Registry'
 
   - job: three
     steps:
